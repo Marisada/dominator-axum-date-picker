@@ -1,0 +1,7 @@
+.vscode/
+debug/
+target/
+wasm-pack/
+Cargo.lock
+**/*.rs.bk
+*.pdb

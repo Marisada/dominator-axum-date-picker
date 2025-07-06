@@ -1,0 +1,37 @@
+[package]
+name = "date-picker"
+version = "1.0.3"
+authors = ["Tomas Miklovic <tommket@gmail.com>"]
+edition = "2024"
+categories = ["date-and-time", "gui"]
+description = " Core library for datepickers that should only depend on chrono."
+include = ["/src/**/*"]
+keywords = ["gui", "datepicker"]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/tommket/chrono-datepicker-core"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+picker-util = { workspace = true }
+
+time = { version = "0.3", features = [ "macros", "parsing", "serde-human-readable", "wasm-bindgen" ]}
+num-traits = { version = "0.2", default-features = false }
+derive_builder = { version = "0.12", default-features = false }
+derive-getters = "0.5"
+cfg-if = "1.0"
+js-sys = "0.3"
+
+# just some cfg macros for automocking
+mockall_double = "0.3"
+
+[dev-dependencies]
+rstest = "0.22"
+criterion = "0.4"
+mockall = "0.12"
+
+[[bench]]
+name = "config_benchmark"
+path = "benches/config_benchmark.rs"
+harness = false
