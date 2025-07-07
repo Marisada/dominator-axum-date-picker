@@ -153,5 +153,8 @@ where
                 }))
             }),
         ])
+        .child_signal(picker.signal_cloned().map(|opt| {
+            opt.map(|picker| DatePicker::render(picker))
+        }))
     })
 }

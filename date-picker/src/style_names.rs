@@ -1,6 +1,8 @@
 pub const DATEPICKER_ROOT: &str = "datepicker-root";
 pub const DATE_CONTAINER: &str = "datepicker-date-container";
 pub const TIME_CONTAINER: &str = "datepicker-time-container";
+pub const HOUR_CONTAINER: &str = "datepicker-hour-container";
+pub const MINUTE_CONTAINER: &str = "datepicker-minute-container";
 
 pub const HEADER: &str = "datepicker-header";
 pub const TITLE: &str = "datepicker-title";

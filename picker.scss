@@ -63,18 +63,20 @@
             .datepicker-selectable {
                 cursor: pointer;
                 &:hover {
-                    background: #888 !important;
+                    background: #999 !important;
                     color: #fff !important;
+                    border-radius: 5px;
                 }
             }
             .datepicker-selected {
-                background: #8c929f !important;
+                background: #777 !important;
                 color: #fff !important;
+                border-radius: 5px;
             }
             .datepicker-unavailable,
             .datepicker-unavailable:hover {
-                background: #edd !important;
-                color: #b88 !important;
+                background: #eee !important;
+                color: #999 !important;
                 cursor: default !important;
             }
             .datepicker-grid-header {
@@ -94,12 +96,44 @@
     }
     .datepicker-time-container {
         display: flex;
+        margin-left: 5px;
+        // margin-top: 30px;
 
-        .datepicker-hour {
+        .datepicker-hour-container,
+        .datepicker-minute-container {
+            padding-left: 5px;
+            padding-right: 5px;
+            height: 207px;
+            overflow-y: scroll;
+            scrollbar-width: none;
+            border-left: 1px solid var(--bs-border-color);
 
-        }
-        .datepicker-minute {
+            .datepicker-hour,
+            .datepicker-minute {
+                display: grid;
+                grid-auto-flow: row;
+                gap: 3px;
+                width: 30px;
 
+                .datepicker-selectable {
+                    cursor: pointer;
+                    &:hover {
+                        background: #999 !important;
+                        color: #fff !important;
+                        border-radius: 5px;
+                    }
+                }
+                .datepicker-selected {
+                    background: #777 !important;
+                    color: #fff !important;
+                    border-radius: 5px;
+                }
+                span {
+                    padding-top: 3px;
+                    padding-bottom: 3px;
+                    text-align: center;
+                }
+            }
         }
     }
 }

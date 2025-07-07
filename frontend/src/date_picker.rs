@@ -7,15 +7,15 @@ use date_picker::{
     utils::{create_dialog_title_text, should_display_next_button, should_display_previous_button},
     viewed_date::{year_group_range, ViewedDate},
 };
-use dominator::{clone, events, html, Dom};
+use dominator::{clone, events, EventOptions, html, Dom, with_node};
 use futures_signals::{
     map_ref,
     signal::{Mutable, Signal, SignalExt},
 };
 use std::rc::Rc;
-use time::{Date, Month, Weekday, Duration, Time};
+use time::{Date, Duration, Month, PrimitiveDateTime, Time, Weekday};
 
-use picker_util::{date_8601, datetime_8601, js_now, month_thai, weekday_thai};
+use picker_util::{date_8601, datetime_8601, js_now, month_thai, weekday_thai, JsTime};
 
 pub struct DatePicker {
 
@@ -30,7 +30,8 @@ pub struct DatePicker {
 
     /// value of the date that is selected
     selected_date: Mutable<Option<Date>>,
-    selected_time: Mutable<Option<Time>>,
+    selected_hour: Mutable<Option<u8>>,
+    selected_minute: Mutable<Option<u8>>,
 
     /// viewed date
     viewed_date: Mutable<Date>,
@@ -53,7 +54,8 @@ impl DatePicker {
             date_mutable,
             container,
             selected_date: Mutable::new(*config.initial_date()),
-            selected_time: Mutable::new(*config.initial_time()),
+            selected_hour: Mutable::new(config.initial_time().map(|t| t.hour())),
+            selected_minute: Mutable::new(config.initial_time().map(|t| t.minute())),
             // dialog_opened: Mutable::new(*config.initially_opened()),
             viewed_date: Mutable::new(config.guess_allowed_year_month()),
             dialog_view_type: Mutable::new(*config.initial_view_type()),
@@ -96,7 +98,8 @@ impl DatePicker {
                 if picker.with_time {
                     let datetime_opt = datetime_8601(&date_mutable);
                     picker.selected_date.set(datetime_opt.map(|dt| dt.date()));
-                    picker.selected_time.set(datetime_opt.map(|dt| dt.time()));
+                    picker.selected_hour.set(datetime_opt.map(|dt| dt.time().hour()));
+                    picker.selected_minute.set(datetime_opt.map(|dt| dt.time().minute()));
                 } else {
                     let date_opt = date_8601(&date_mutable);
                     picker.selected_date.set(date_opt);
@@ -117,10 +120,13 @@ impl DatePicker {
                 .child(Self::render_footer(picker.clone()))
             }))
             .apply_if(picker.with_time, |dom| { dom
-                .children([
-                    Self::render_dialog_hours(picker.clone()),
-                    Self::render_dialog_minutes(picker.clone()),
-                ])
+                .child(html!("div", {
+                    .class(TIME_CONTAINER)
+                    .children([
+                        Self::render_dialog_hours(picker.clone()),
+                        Self::render_dialog_minutes(picker.clone()),
+                    ])
+                }))
             })
         })
     }
@@ -186,9 +192,16 @@ impl DatePicker {
                     .class([BUTTON, CLOSE])
                     .child(html!("i", {.class(["fa","fa-xmark"])}))
                     .event(clone!(picker => move |_:events::Click| {
-                        // make sure we send selected_date out
                         if let Some(selected_date) = picker.selected_date.get_cloned() {
-                            picker.date_mutable.set_neq(selected_date.to_string());
+                            if picker.with_time {
+                                // selected_hour and selected_minute comes from defined valid value, cannot panic
+                                let select_hour = picker.selected_hour.get().unwrap_or_default();
+                                let select_minute = picker.selected_minute.get().unwrap_or_default();
+                                let selected_time = Time::from_hms(select_hour, select_minute, 0).unwrap();
+                                picker.date_mutable.set_neq(PrimitiveDateTime::new(selected_date, selected_time).js_string());
+                            } else {
+                                picker.date_mutable.set_neq(selected_date.to_string());
+                            }
                         }
                         picker.container.set(None);
                     }))
@@ -265,8 +278,10 @@ impl DatePicker {
                     picker.viewed_date.set(new_year);
                     if picker.config.selection_type() == &DialogViewType::Years {
                         picker.selected_date.set(Some(new_year));
-                        picker.date_mutable.set_neq(new_year.to_string());
-                        picker.container.set(None);
+                        if !picker.with_time {
+                            picker.date_mutable.set_neq(new_year.to_string());
+                            picker.container.set(None);
+                        }
                     } else {
                         picker.dialog_view_type.set(DialogViewType::Months);
                     }
@@ -319,8 +334,10 @@ impl DatePicker {
                     picker.viewed_date.set(new_month);
                     if picker.config.selection_type() == &DialogViewType::Months {
                         picker.selected_date.set(Some(new_month));
-                        picker.date_mutable.set_neq(new_month.to_string());
-                        picker.container.set(None);
+                        if !picker.with_time {
+                            picker.date_mutable.set_neq(new_month.to_string());
+                            picker.container.set(None);
+                        }
                     } else {
                         picker.dialog_view_type.set(DialogViewType::Days);
                     }
@@ -372,8 +389,10 @@ impl DatePicker {
                 .event(clone!(picker => move |_:events::Click| {
                     picker.selected_date.set(Some(display_day));
                     picker.viewed_date.set(display_day);
-                    picker.date_mutable.set_neq(display_day.to_string());
-                    picker.container.set(None);
+                    if !picker.with_time {
+                        picker.date_mutable.set_neq(display_day.to_string());
+                        picker.container.set(None);
+                    }
                 }))
             })
         })
@@ -381,46 +400,76 @@ impl DatePicker {
 
     fn render_dialog_hours(picker: Rc<Self>) -> Dom {
         html!("div", {
-            .class(HOUR)
-            .children((0..=23u8).map(|h| {
-                // never fail
-                let new_hour = Time::from_hms(h, 0, 0).unwrap();
-                Self::render_hour_cell(new_hour, picker.clone())
+            .class(HOUR_CONTAINER)
+            .child(html!("div", {
+                .class(HOUR)
+                .style("grid-template-columns", "1fr")
+                .children((0..=23u8).map(|h| {
+                    // never fail
+                    Self::render_hour_cell(h, picker.clone())
+                }))
             }))
+            .with_node!(element => {
+                .future(picker.selected_hour.signal().for_each(clone!(element => move |opt| {
+                    if let Some(selected_hour) = opt {
+                        // gap 3px, padding-top 3px, padding-bottom 3px
+                        element.set_scroll_top(selected_hour as i32 * 30);
+                    }
+                    async {}
+                })))
+            })
         })
     }
 
-    fn render_hour_cell(display_hour: Time, picker: Rc<Self>) -> Dom {
+    fn render_hour_cell(display_hour: u8, picker: Rc<Self>) -> Dom {
         html!("span", {
-            .text(&display_hour.hour().to_string())
-            .class_signal(SELECTED, picker.selected_time.signal_cloned().map(move |opt| opt.map_or(false, |selected_time| selected_time.hour() == display_hour.hour())))
+            .text(&display_hour.to_string())
+            .class(SELECTABLE)
+            .class_signal(SELECTED, picker.selected_hour.signal_cloned().map(move |opt| opt.map_or(false, |selected_hour| selected_hour == display_hour)))
             .attr("role", "gridcell")
-            .prop_signal("aria-selected", picker.selected_time.signal_cloned().map(move |opt| {
-                if opt.map_or(false, |selected_time| selected_time.hour() == display_hour.hour()) {"true"} else {"false"}
+            .prop_signal("aria-selected", picker.selected_hour.signal_cloned().map(move |opt| {
+                if opt.map_or(false, |selected_hour| selected_hour == display_hour) {"true"} else {"false"}
             }))
             .event(clone!(picker => move |_:events::Click| {
-                let new_month = Date::from_calendar_date(display_month.year(), display_month.month(), 1).unwrap();
-                picker.viewed_date.set(new_month);
-                if picker.config.selection_type() == &DialogViewType::Months {
-                    picker.selected_date.set(Some(new_month));
-                    picker.date_mutable.set_neq(new_month.to_string());
-                    picker.container.set(None);
-                } else {
-                    picker.dialog_view_type.set(DialogViewType::Days);
-                }
+                picker.selected_hour.set(Some(display_hour));
             }))
         })
     }
 
     fn render_dialog_minutes(picker: Rc<Self>) -> Dom {
         html!("div", {
-            .class(MINUTE)
-            .children_signal_vec(picker.viewed_time.signal().map(clone!(picker => move |t| {
-                (0..=59u8).map(|m| {
-                    let new_mimute = Time::from_hms(t.hour(), m, 0);
-                    Self::render_minute_cell(new_minute, picker.clone())
-                }).collect::<Vec<Dom>>()
-            })).to_signal_vec())
+            .class(MINUTE_CONTAINER)
+            .child(html!("div", {
+                .class(MINUTE)
+                .style("grid-template-columns", "1fr")
+                .children((0..=59u8).map(|m| {
+                    Self::render_minute_cell(m, picker.clone())
+                }))
+            }))
+            .with_node!(element => {
+                .future(picker.selected_minute.signal().for_each(clone!(element => move |opt| {
+                    if let Some(selected_minute) = opt {
+                        // gap 3px, padding-top 3px, padding-bottom 3px
+                        element.set_scroll_top(selected_minute as i32 * 30);
+                    }
+                    async {}
+                })))
+            })
+        })
+    }
+
+    fn render_minute_cell(display_minute: u8, picker: Rc<Self>) -> Dom {
+        html!("span", {
+            .text(&display_minute.to_string())
+            .class(SELECTABLE)
+            .class_signal(SELECTED, picker.selected_minute.signal_cloned().map(move |opt| opt.map_or(false, |selected_minute| selected_minute == display_minute)))
+            .attr("role", "gridcell")
+            .prop_signal("aria-selected", picker.selected_hour.signal_cloned().map(move |opt| {
+                if opt.map_or(false, |selected_hour| selected_hour == display_minute) {"true"} else {"false"}
+            }))
+            .event(clone!(picker => move |_:events::Click| {
+                picker.selected_minute.set(Some(display_minute));
+            }))
         })
     }
 }
