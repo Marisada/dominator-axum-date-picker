@@ -1,4 +1,5 @@
 pub const DATEPICKER_ROOT: &str = "datepicker-root";
+pub const DATEPICKER_BACKDROP: &str = "datepicker-backdrop";
 pub const DATE_CONTAINER: &str = "datepicker-date-container";
 pub const TIME_CONTAINER: &str = "datepicker-time-container";
 pub const HOUR_CONTAINER: &str = "datepicker-hour-container";
@@ -17,6 +18,7 @@ pub const TODAY: &str = "datepicker-today";
 
 pub const HOUR: &str = "datepicker-hour";
 pub const MINUTE: &str = "datepicker-minute";
+pub const TIME_FOOTER: &str = "datepicker-time-footer";
 
 pub const BODY: &str = "datepicker-body";
 pub const SELECTABLE: &str = "datepicker-selectable";

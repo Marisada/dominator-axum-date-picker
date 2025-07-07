@@ -7,6 +7,7 @@
     color: var(--bs-body-color);
     background-color: var(--bs-body-bg);
     line-height: normal;
+    user-select: none;
     z-index: 3;
 
     .datepicker-date-container {
@@ -20,22 +21,35 @@
             .datepicker-title {
                 text-align: center;
                 font-weight: bold;
-                cursor: pointer;
                 margin: auto;
                 width: 150px;
+                cursor: pointer;
+
+                &:hover {
+                    background: #999 !important;
+                    color: #fff !important;
+                    border-radius: 5px;
+                }
             }
 
             .datepicker-button {
                 background-color: var(--bs-body-bg);
-                cursor: pointer;
                 width: 15%;
                 font-size: 130%;
-            }
-            .datepicker-previous,
-            .datepicker-next,
-            .datepicker-close {
                 border: none;
+                cursor: pointer;
+
+                &:hover {
+                    background: #999 !important;
+                    color: #fff !important;
+                    border-radius: 5px;
+                }
             }
+            // .datepicker-previous,
+            // .datepicker-next,
+            // .datepicker-close {
+                
+            // }
         }
         .datepicker-footer {
             margin-top: 5px;
@@ -43,23 +57,31 @@
 
             .datepicker-button {
                 background-color: var(--bs-body-bg);
-                width: 50%;
                 border: none;
+                padding-left: 15px;
+                padding-right: 15px;
                 cursor: pointer;
+
+                &:hover {
+                    background: #999 !important;
+                    color: #fff !important;
+                    border-radius: 5px;
+                }
             }
             .datepicker-empty {
-                text-align: left;
-                padding-left: 15px;
+                margin-right: auto;
+
             }
             .datepicker-today {
-                text-align: right;
-                padding-right: 15px;
+                margin-left: auto;
             }
         }
         .datepicker-body {
             display: grid;
             grid-auto-flow: row;
             gap: 3px;
+            min-height: 175px;
+
             .datepicker-selectable {
                 cursor: pointer;
                 &:hover {
@@ -86,7 +108,6 @@
             .datepicker-other-month {
                 color: #999;
             }
-            // every cell of the grid
             span {
                 padding-top: 10%;
                 padding-bottom: 10%;
@@ -97,6 +118,7 @@
     .datepicker-time-container {
         display: flex;
         margin-left: 5px;
+        min-height: 235px;
         // margin-top: 30px;
 
         .datepicker-hour-container,
@@ -106,7 +128,6 @@
             height: 207px;
             overflow-y: scroll;
             scrollbar-width: none;
-            border-left: 1px solid var(--bs-border-color);
 
             .datepicker-hour,
             .datepicker-minute {
@@ -136,4 +157,31 @@
             }
         }
     }
+    .datepicker-time-footer {
+        position: absolute;
+        bottom: .375rem;
+        right: 20px;
+
+        .datepicker-button {
+            background-color: var(--bs-body-bg);
+            border: none;
+            margin-top: 5px;
+            cursor: pointer;
+
+            &:hover {
+                background: #999 !important;
+                color: #fff !important;
+                border-radius: 5px;
+            }
+        }
+    }
+}
+
+.datepicker-backdrop {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
 }
