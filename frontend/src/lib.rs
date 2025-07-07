@@ -5,9 +5,8 @@ use wasm_bindgen::prelude::*;
 
 mod dom;
 mod date_picker;
-mod util;
 
-use util::{JsTime, js_now, time_8601, time_pat, time_from_pat};
+use picker_util::{JsTime, js_now, time_8601, time_pat, time_from_pat};
 
 #[wasm_bindgen(start)]
 pub fn main_js() {

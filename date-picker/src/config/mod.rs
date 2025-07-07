@@ -3,7 +3,7 @@ use self::date_constraints::HasDateConstraints;
 
 use crate::dialog_view_type::DialogViewType;
 
-use time::{Date, OffsetDateTime, macros::offset};
+use time::{Date, OffsetDateTime, Time, macros::offset};
 
 /// Configuration for the datepicker.
 #[derive(Default, Debug, Builder, Getters)]
@@ -17,6 +17,7 @@ pub struct PickerConfig<T: HasDateConstraints + Default + Clone> {
 
     /// initializes the datepicker to this value
     initial_date: Option<Date>,
+    initial_time: Option<Time>,
 
     /// initializes the view type to this value
     initial_view_type: DialogViewType,
@@ -146,6 +147,7 @@ mod tests {
         PickerConfig {
             date_constraints: mock_constraints,
             initial_date: *config.initial_date(),
+            initial_time: *config.initial_time(),
             initial_view_type: *config.initial_view_type(),
             selection_type: *config.selection_type(),
             initially_opened: *config.initially_opened(),

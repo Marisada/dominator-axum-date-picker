@@ -2,10 +2,9 @@ use dominator::{clone, events, html, Dom, with_node, traits::MultiStr};
 use futures_signals::signal::{Mutable, SignalExt};
 use web_sys::HtmlInputElement;
 
-use crate::{
-    date_picker::{DatePicker, DateConstraints, PickerConfig},
-    util::{JsTime, date_str_th, date_8601, date_pat, date_from_pat ,datetime_str_th, datetime_8601, datetime_pat, datetime_from_pat},
-};
+use picker_util::{JsTime, date_str_th, date_8601, date_pat, date_from_pat ,datetime_str_th, datetime_8601, datetime_pat, datetime_from_pat};
+
+use crate::date_picker::{DatePicker, DateConstraints, PickerConfig};
 
 pub fn date_input_with_picker<B> (date_mutable: Mutable<String>, container_class: B) -> Dom
 where 
@@ -69,7 +68,7 @@ where
                 .attr("title", "แสดงเครื่องมือเลือกวันที่")
                 .event(clone!(date_mutable, picker => move |_:events::Click| {
                     if picker.get_cloned().is_none() {
-                        let new_picker = DatePicker::new(date_mutable.clone(), picker.clone(), PickerConfig::<DateConstraints>::default());
+                        let new_picker = DatePicker::new(false, date_mutable.clone(), picker.clone(), PickerConfig::<DateConstraints>::default());
                         picker.set(Some(new_picker));
                     } else {
                         picker.set(None);
@@ -89,6 +88,8 @@ where
     B: MultiStr 
 {
     let datetime_active = Mutable::new(false);
+    let picker = Mutable::new(None);
+    
     html!("div", {
         .class(container_class)
         .class("position-relative")
@@ -142,8 +143,13 @@ where
                 .style("color", "var(--bs-body-color)")
                 .style("z-index","2")
                 .attr("title", "แสดงเครื่องมือเลือกวันที่และเวลา")
-                .event(clone!(datetime_active => move |_:events::Click| {
-                    // TODO
+                .event(clone!(datetime_mutable, picker => move |_:events::Click| {
+                    if picker.get_cloned().is_none() {
+                        let new_picker = DatePicker::new(true, datetime_mutable.clone(), picker.clone(), PickerConfig::<DateConstraints>::default());
+                        picker.set(Some(new_picker));
+                    } else {
+                        picker.set(None);
+                    }
                 }))
             }),
         ])

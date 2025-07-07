@@ -1,6 +1,6 @@
 use time::{Date, Month};
 
-use picker_util::month_thai;
+use picker_util::month_thai_full;
 
 use crate::{
     config::date_constraints::HasDateConstraints,
@@ -14,7 +14,7 @@ pub fn create_dialog_title_text(
     viewed_date: &Date,
 ) -> String {
     match dialog_view_type {
-        DialogViewType::Days => format!("{} {}", month_thai(&viewed_date.month()), viewed_date.year() + 543),
+        DialogViewType::Days => format!("{} {}", month_thai_full(&viewed_date.month()), viewed_date.year() + 543),
         DialogViewType::Months => (viewed_date.year() + 543).to_string(),
         DialogViewType::Years => format!(
             "{} - {}",
@@ -71,10 +71,9 @@ mod tests {
 
     #[rstest(
         expected, dialog_view_type, viewed_date,
-        case::days_default("January 1990", DialogViewType::Days, create_date(1990, 1, 1)),
-        case::days_different_format("January 1990", DialogViewType::Days, create_date(1990, 1, 1)),
-        case::months("1990", DialogViewType::Months, create_date(1990, 1, 1)),
-        case::years("1980 - 1999", DialogViewType::Years, create_date(1990, 1, 1)),
+        case::days_default("มกราคม 2533", DialogViewType::Days, create_date(1990, 1, 1)),
+        case::months("2533", DialogViewType::Months, create_date(1990, 1, 1)),
+        case::years("2520 - 2539", DialogViewType::Years, create_date(1990, 1, 1)),
     )]
     fn test_create_dialog_title_text(
         expected: &str,
