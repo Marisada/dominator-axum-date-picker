@@ -5,9 +5,8 @@ use wasm_bindgen::prelude::*;
 
 mod dom;
 mod date_picker;
-mod util;
 
-use util::{JsTime, js_now, time_8601, time_pat, time_from_pat};
+use picker_util::{JsTime, js_now};
 
 #[wasm_bindgen(start)]
 pub fn main_js() {
@@ -162,31 +161,9 @@ fn render() -> Dom {
                 .class(["row","mx-1","my-3","p-2","border"])
                 .children([
                     html!("div", {.text("Customized")}),
-                    dom::date_input_with_picker(date_mutable.clone(), ["p-0","my-1"]),
-                    html!("input" => HtmlInputElement, {
-                        .attr("type", "text")
-                        .class(["form-control","my-1"])
-                        .attr("placeholder", "HH:MM")
-                        .attr("maxlength","5")
-                        .prop_signal("value", time_mutable.signal_cloned().map(|s| {
-                            if let Some(t) = time_8601(&s) {
-                                time_pat(&t)
-                            } else {
-                                String::new()
-                            }
-                        }))
-                        .with_node!(element => {
-                            .event(clone!(time_mutable => move |_:events::Change| {
-                                let v = if let Some(t) = time_from_pat(&element.value()) {
-                                    t.js_string()
-                                } else {
-                                    String::new()
-                                };
-                                time_mutable.set(v);
-                            }))
-                        })
-                    }),
-                    dom::datetime_input_with_picker(datetime_mutable.clone(), ["p-0","my-1"])
+                    dom::datetime_input_with_picker(false, date_mutable.clone(), ["p-0","my-1"]),
+                    dom::time_input_with_picker(time_mutable.clone(), ["p-0","my-1"]),
+                    dom::datetime_input_with_picker(true, datetime_mutable.clone(), ["p-0","my-1"])
                 ])
             }),
         ])

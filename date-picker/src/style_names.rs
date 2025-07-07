@@ -1,14 +1,28 @@
 pub const DATEPICKER_ROOT: &str = "datepicker-root";
-pub const HEADER: &str = "header";
-pub const TITLE: &str = "title";
-pub const BUTTON: &str = "button";
-pub const PREVIOUS: &str = "previous";
-pub const NEXT: &str = "next";
-pub const CLOSE: &str = "close";
+pub const DATEPICKER_BACKDROP: &str = "datepicker-backdrop";
+pub const DATE_CONTAINER: &str = "datepicker-date-container";
+pub const TIME_CONTAINER: &str = "datepicker-time-container";
+pub const HOUR_CONTAINER: &str = "datepicker-hour-container";
+pub const MINUTE_CONTAINER: &str = "datepicker-minute-container";
 
-pub const BODY: &str = "body";
-pub const SELECTABLE: &str = "selectable";
-pub const SELECTED: &str = "selected";
-pub const UNAVAILABLE: &str = "unavailable";
-pub const GRID_HEADER: &str = "grid-header";
-pub const OTHER_MONTH: &str = "other-month";
+pub const HEADER: &str = "datepicker-header";
+pub const TITLE: &str = "datepicker-title";
+pub const BUTTON: &str = "datepicker-button";
+pub const PREVIOUS: &str = "datepicker-previous";
+pub const NEXT: &str = "datepicker-next";
+pub const CLOSE: &str = "datepicker-close";
+
+pub const FOOTER: &str = "datepicker-footer";
+pub const EMPTY: &str = "datepicker-empty";
+pub const TODAY: &str = "datepicker-today";
+
+pub const HOUR: &str = "datepicker-hour";
+pub const MINUTE: &str = "datepicker-minute";
+pub const TIME_FOOTER: &str = "datepicker-time-footer";
+
+pub const BODY: &str = "datepicker-body";
+pub const SELECTABLE: &str = "datepicker-selectable";
+pub const SELECTED: &str = "datepicker-selected";
+pub const UNAVAILABLE: &str = "datepicker-unavailable";
+pub const GRID_HEADER: &str = "datepicker-grid-header";
+pub const OTHER_MONTH: &str = "datepicker-other-month";

@@ -3,7 +3,9 @@ use self::date_constraints::HasDateConstraints;
 
 use crate::dialog_view_type::DialogViewType;
 
-use time::{Date, OffsetDateTime, macros::offset};
+use time::{Date, Time};
+
+use picker_util::js_now;
 
 /// Configuration for the datepicker.
 #[derive(Default, Debug, Builder, Getters)]
@@ -17,19 +19,13 @@ pub struct PickerConfig<T: HasDateConstraints + Default + Clone> {
 
     /// initializes the datepicker to this value
     initial_date: Option<Date>,
+    initial_time: Option<Time>,
 
     /// initializes the view type to this value
     initial_view_type: DialogViewType,
 
     /// selection type, to make it possible to select for example only a year, or only a month.
     selection_type: DialogViewType,
-
-    /// whether the dialog should be immediatelly opened after initalization
-    initially_opened: bool,
-
-    /// chrono formatting string for the title of the month
-    #[builder(default = "String::from(\"%b %Y\")", setter(into))]
-    month_title_format: String,
 }
 
 impl<T: HasDateConstraints + std::default::Default + Clone> HasDateConstraints for PickerConfig<T> {
@@ -74,8 +70,7 @@ impl<T: HasDateConstraints + std::default::Default + Clone> PickerConfig<T> {
             return init_date;
         }
         // if none of the above constraints matched use the current_date
-        let ts = (js_sys::Date::now() as i64).saturating_div(1_000);
-        OffsetDateTime::from_unix_timestamp(ts).unwrap().to_offset(offset!(+7)).date()
+        js_now().date()
     }
 }
 
@@ -146,10 +141,9 @@ mod tests {
         PickerConfig {
             date_constraints: mock_constraints,
             initial_date: *config.initial_date(),
+            initial_time: *config.initial_time(),
             initial_view_type: *config.initial_view_type(),
             selection_type: *config.selection_type(),
-            initially_opened: *config.initially_opened(),
-            month_title_format: config.month_title_format().to_owned().clone(),
         }
     }
 
