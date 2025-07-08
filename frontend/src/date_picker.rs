@@ -171,18 +171,17 @@ impl DatePicker {
                     })
                     .apply_if(picker.with_time, |dom| { dom
                         .child(html!("div", {
-                            .style("display", "flex")
-                            .style("flex-direction", "column")
+                            .class(TIME_CONTAINER)
                             .children([
                                 html!("div", {
-                                    .class(TIME_CONTAINER)
+                                    .class(BODY)
                                     .children([
                                         Self::render_dialog_hours(picker.clone()),
                                         Self::render_dialog_minutes(picker.clone()),
                                     ])
                                 }),
                                 html!("div", {
-                                    .class(TIME_FOOTER)
+                                    .class(FOOTER)
                                     .child(Self::render_exit(picker.clone()))
                                 }),
                             ])

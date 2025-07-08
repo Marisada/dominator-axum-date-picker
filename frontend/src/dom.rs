@@ -36,7 +36,7 @@ where
             html!("input" => HtmlInputElement, {
                 .attr("type", "text")
                 .class("form-control")
-                .attr("placeholder", if with_time {"DD/MM/YYYY HH:MM"} else {"DD/MM/YYYY"})
+                .attr("placeholder", if with_time {"เช่น 31/8/68 23:45"} else {"เช่น 31/8/68"})
                 .attr("maxlength", if with_time {"16"} else {"10"})
                 .prop_signal("value", date_mutable.signal_cloned().map(move |s| {
                     if with_time {
@@ -115,7 +115,7 @@ where
             html!("input" => HtmlInputElement, {
                 .attr("type", "text")
                 .class("form-control")
-                .attr("placeholder", "HH:MM")
+                .attr("placeholder", "เช่น 23:45")
                 .attr("maxlength","5")
                 .prop_signal("value", time_mutable.signal_cloned().map(|s| {
                     time_8601(&s).map(|t| time_pat(&t)).unwrap_or_default()
