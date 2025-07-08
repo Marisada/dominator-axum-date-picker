@@ -41,8 +41,7 @@ version = "0.2"
 features = ["js"]
 
 [package.metadata.wasm-pack.profile.release]
-# wasm-opt = false
-wasm-opt = ['-Oz']
+wasm-opt = ["-Oz","--enable-bulk-memory","--enable-nontrapping-float-to-int"]
 
 [dev-dependencies]
 wasm-bindgen-test = { workspace = true }

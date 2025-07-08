@@ -1,15 +1,15 @@
 [workspace]
 members = [ "backend", "frontend", "date-picker", "picker-util" ]
-resolver = "2"
+resolver = "3"
 
 [workspace.package]
-version = "0.1.2"
-rust-version = "1.83"
-edition = "2021"
+version = "0.1.0"
+rust-version = "1.88"
+edition = "2024"
 authors = ["Marisada Pitakthum <p.marisada@gmail.com>"]
-description = "Dominator + Axum template"
+description = "Thai Date Picker using Dominator + Axum template"
 license = "MIT"
-repository = "https://github.com/Marisada/dominator-axum"
+repository = "https://github.com/Marisada/dominator-axum-date-picker"
 keywords = []
 
 [workspace.dependencies]
@@ -67,3 +67,4 @@ incremental = false
 panic = "abort"
 debug = false
 codegen-units = 1
+strip = true

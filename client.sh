@@ -4,7 +4,7 @@ set -e
 
 NAME="client"
 PWA_PATH="volume/pwa"
-WASM_PAHT="frontend"
+WASM_PATH="frontend"
 PROJECT_PATH=$(pwd)
 
 cd $PWA_PATH
