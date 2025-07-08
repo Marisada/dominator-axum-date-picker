@@ -13,6 +13,9 @@ if exist "%name%_bg.wasm" (
 if exist "%name%.js" (
     del %name%.js
 )
+if exist "sw.js" (
+    del sw.js
+)
 
 cd %project_path%\%wasm_path%
 

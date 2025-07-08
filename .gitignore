@@ -1,6 +1,9 @@
 debug
 target
 Cargo.lock
+volume/pwa/client.js
+volume/pwa/client_bg.wasm
+volume/pwa/sw.js
 *.pdb
 **/*.rs.bk
 **/wasm-pack
