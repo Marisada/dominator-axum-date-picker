@@ -1,6 +1,7 @@
 .datepicker-root {
     display: flex;
     position: absolute;
+    height: 280px;
     border: 1px solid var(--bs-border-color);
     border-radius: var(--bs-border-radius);
     padding: .375rem;
@@ -53,7 +54,6 @@
             display: grid;
             grid-auto-flow: row;
             gap: 3px;
-            min-height: 175px;
 
             .datepicker-selectable {
                 cursor: pointer;
@@ -88,7 +88,9 @@
             }
         }
         .datepicker-footer {
-            margin-top: 5px;
+            position: absolute;
+            bottom: .375rem;
+            width: 210px;
             display: flex;
 
             .datepicker-button {
@@ -126,7 +128,7 @@
             .datepicker-minute-container {
                 padding-left: 5px;
                 padding-right: 5px;
-                height: 207px;
+                height: 237px;
                 overflow-y: scroll;
                 scrollbar-width: none;
 
