@@ -1,11 +1,11 @@
-pub use date_picker::config::{PickerConfig, PickerConfigBuilder, date_constraints::DateConstraints};
+pub use time_datepicker_core::config::{PickerConfig, PickerConfigBuilder, date_constraints::DateConstraints};
 
-use date_picker::{
+use time_datepicker_core::{
     config::date_constraints::HasDateConstraints,
     dialog_view_type::DialogViewType,
     style_names::*,
-    utils::{create_dialog_title_text, should_display_next_button, should_display_previous_button},
-    viewed_date::{year_group_range, ViewedDate},
+    utils::{should_display_next_button, should_display_previous_button},
+    viewed_date::{year_group_range, ViewedDate, year_group_start, year_group_end},
 };
 use dominator::{clone, events, html, Dom, with_node};
 use futures_signals::{
@@ -15,7 +15,7 @@ use futures_signals::{
 use std::rc::Rc;
 use time::{Date, Duration, Month, PrimitiveDateTime, Time, Weekday};
 
-use picker_util::{date_8601, datetime_8601, time_8601, js_now, month_thai, weekday_thai, JsTime};
+use picker_util::{date_8601, datetime_8601, time_8601, js_now, month_thai, month_thai_full, weekday_thai, JsTime};
 
 pub struct DatePicker {
 
@@ -573,4 +573,52 @@ fn render_weekday_name(day: Weekday) -> Dom {
         .class(GRID_HEADER)
         .attr("role", "columnheader")
     })
+}
+
+/// Creates the text that should be the title of the datepicker dialog.
+pub fn create_dialog_title_text(
+    dialog_view_type: &DialogViewType,
+    viewed_date: &Date,
+) -> String {
+    match dialog_view_type {
+        DialogViewType::Days => format!("{} {}", month_thai_full(&viewed_date.month()), viewed_date.year() + 543),
+        DialogViewType::Months => (viewed_date.year() + 543).to_string(),
+        DialogViewType::Years => format!(
+            "{} - {}",
+            year_group_start(viewed_date.year() + 543),
+            year_group_end(viewed_date.year() + 543)
+        ),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use time_datepicker_core::{
+        viewed_date::{YearNumber, MonthNumber, DayNumber},
+        utils::from_ymd,
+    };
+    use rstest::*;
+
+    #[fixture(year = 1990, month = 1, day = 1)]
+    fn create_date(year: YearNumber, month: MonthNumber, day: DayNumber) -> Date {
+        from_ymd(year, month, day)
+    }
+
+    #[rstest(
+        expected, dialog_view_type, viewed_date,
+        case::days_default("มกราคม 2533", DialogViewType::Days, create_date(1990, 1, 1)),
+        case::months("2533", DialogViewType::Months, create_date(1990, 1, 1)),
+        case::years("2520 - 2539", DialogViewType::Years, create_date(1990, 1, 1)),
+    )]
+    fn test_create_dialog_title_text(
+        expected: &str,
+        dialog_view_type: DialogViewType,
+        viewed_date: Date,
+    ) {
+        assert_eq!(
+            expected,
+            create_dialog_title_text(&dialog_view_type, &viewed_date)
+        );
+    }
 }
