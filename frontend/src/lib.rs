@@ -168,6 +168,27 @@ fn render() -> Dom {
             }),
             html!("div", {
                 .class(["row","mx-1","my-3","p-2","border"])
+                .children([
+                    html!("div", {.class("fw-bold").text("Under overflow-hidden parent")}),
+                    html!("div", {
+                        .class(["mt-1","pt-2","border","border-primary","overflow-hidden"])
+                        .style("height","65px")
+                        .child(dom::date_input_with_picker(date_mutable.clone(), ["p-0","my-1"], "rounded-1"))
+                    }),
+                    html!("div", {
+                        .class(["mt-1","pt-2","border","border-primary","overflow-hidden"])
+                        .style("height","65px")
+                        .child(dom::time_input_with_picker(time_mutable.clone(), ["p-0","my-1"], "rounded-2"))
+                    }),
+                    html!("div", {
+                        .class(["mt-1","pt-2","border","border-primary","overflow-hidden"])
+                        .style("height","65px")
+                        .child(dom::datetime_input_with_picker(datetime_mutable.clone(), ["p-0","my-1"], "rounded-3"))
+                    }),
+                ])
+            }),
+            html!("div", {
+                .class(["row","mx-1","my-3","p-2","border"])
                 .child(html!("div", {
                     .class(["col-9","offset-3"])
                     .children([

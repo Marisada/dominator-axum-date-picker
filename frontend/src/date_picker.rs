@@ -1,4 +1,4 @@
-use dominator::{clone, events, html, window_size, with_node, Dom};
+use dominator::{clone, events, html, with_node, Dom};
 use futures_signals::{
     map_ref,
     signal::{Mutable, Signal, SignalExt},
@@ -12,7 +12,6 @@ use time_datepicker_core::{
     utils::{should_display_next_button, should_display_previous_button},
     viewed_date::{year_group_range, ViewedDate, year_group_start, year_group_end},
 };
-use web_sys::DomRect;
 
 use picker_util::{date_8601, datetime_8601, time_8601, js_now, month_thai, month_thai_full, weekday_thai, JsTime};
 
@@ -27,7 +26,6 @@ pub struct DatePicker {
 
     /// external self
     container: Mutable<Option<Rc<Self>>>,
-    parent_position: DomRect,
 
     /// value of the date that is selected
     selected_date: Mutable<Option<Date>>,
@@ -49,13 +47,16 @@ pub struct DatePicker {
 
 impl DatePicker {
 
-    pub fn new_date(date_mutable: Mutable<String>, container: Mutable<Option<Rc<Self>>>, parent_position: DomRect, config: PickerConfig<DateConstraints>) -> Rc<Self> {
+    pub fn new_date(
+        date_mutable: Mutable<String>,
+        container: Mutable<Option<Rc<Self>>>,
+        config: PickerConfig<DateConstraints>,
+    ) -> Rc<Self> {
         Rc::new(Self {
             with_date: true,
             with_time: false,
             date_mutable,
             container,
-            parent_position,
             selected_date: Mutable::new(*config.initial_date()),
             selected_hour: Mutable::new(config.initial_time().map(|t| t.hour())),
             selected_minute: Mutable::new(config.initial_time().map(|t| t.minute())),
@@ -67,13 +68,16 @@ impl DatePicker {
         })
     }
 
-    pub fn new_time(time_mutable: Mutable<String>, container: Mutable<Option<Rc<Self>>>, parent_position: DomRect, config: PickerConfig<DateConstraints>) -> Rc<Self> {
+    pub fn new_time(
+        time_mutable: Mutable<String>,
+        container: Mutable<Option<Rc<Self>>>,
+        config: PickerConfig<DateConstraints>,
+    ) -> Rc<Self> {
         Rc::new(Self {
             with_date: false,
             with_time: true,
             date_mutable: time_mutable,
             container,
-            parent_position,
             selected_date: Mutable::new(*config.initial_date()),
             selected_hour: Mutable::new(config.initial_time().map(|t| t.hour())),
             selected_minute: Mutable::new(config.initial_time().map(|t| t.minute())),
@@ -85,13 +89,16 @@ impl DatePicker {
         })
     }
 
-    pub fn new_datetime(date_mutable: Mutable<String>, container: Mutable<Option<Rc<Self>>>, parent_position: DomRect, config: PickerConfig<DateConstraints>) -> Rc<Self> {
+    pub fn new_datetime(
+        date_mutable: Mutable<String>,
+        container: Mutable<Option<Rc<Self>>>,
+        config: PickerConfig<DateConstraints>,
+    ) -> Rc<Self> {
         Rc::new(Self {
             with_date: true,
             with_time: true,
             date_mutable,
             container,
-            parent_position,
             selected_date: Mutable::new(*config.initial_date()),
             selected_hour: Mutable::new(config.initial_time().map(|t| t.hour())),
             selected_minute: Mutable::new(config.initial_time().map(|t| t.minute())),
@@ -133,32 +140,7 @@ impl DatePicker {
 
     pub fn render(picker: Rc<Self>) -> Dom {
         html!("div", {
-            .style("position", "absolute")
-            .style_signal("left", window_size().map(clone!(picker => move |ws| {
-                // 312px x 252px
-                let left = if ws.width > (picker.parent_position.left() + 312.0) {
-                    0.0  
-                } else {
-                    picker.parent_position.width() - 312.0
-                };
-                [&left.to_string(),"px"].concat()
-            })))
-            .style_signal("bottom", window_size().map(clone!(picker => move |ws| {
-                // 312px x 252px(280)
-                let bottom = if ws.height > (picker.parent_position.bottom() + 280.0) {
-                    1.0  
-                } else {
-                    picker.parent_position.height() + 279.0
-                };
-                [&bottom.to_string(),"px"].concat()
-            })))
             .children([
-                html!("div", {
-                    .class(DATEPICKER_BACKDROP)
-                    .event(clone!(picker => move |_:events::Click| {
-                        picker.exit();
-                    }))
-                }),
                 html!("div", {
                     .future(picker.date_mutable.signal_cloned().for_each(clone!(picker => move |date_mutable| {
                         if picker.with_date && picker.with_time {
@@ -209,7 +191,13 @@ impl DatePicker {
                             ])
                         }))
                     })
-                })
+                }),
+                html!("div", {
+                    .class(DATEPICKER_BACKDROP)
+                    .event(clone!(picker => move |_:events::Click| {
+                        picker.exit();
+                    }))
+                }),
             ])
         })
     }

@@ -14,6 +14,7 @@
     .datepicker-date-container {
         display: flex;
         flex-direction: column;
+        margin-right: 8px;
 
         .datepicker-header {
             margin-bottom: 5px;
@@ -121,7 +122,6 @@
 
         .datepicker-body {
             display: flex;
-            margin-left: 5px;
             min-height: 235px;            
 
             .datepicker-hour-container,
