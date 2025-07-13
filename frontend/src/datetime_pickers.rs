@@ -1,27 +1,31 @@
-use dominator::{clone, events, EventOptions, html, Dom, DomBuilder, with_node};
-use futures_signals::signal::{Broadcaster, not, Mutable, Signal, SignalExt};
+use dominator::{Dom, DomBuilder, EventOptions, clone, events, html, with_node};
+use futures_signals::signal::{Broadcaster, Mutable, Signal, SignalExt, not};
 use time::PrimitiveDateTime;
-use time_datepicker_core::config::{date_constraints::{DateConstraints, HasDateConstraints}, PickerConfig};
+use time_datepicker_core::config::{
+    PickerConfig,
+    date_constraints::{DateConstraints, HasDateConstraints},
+};
 use web_sys::{HtmlElement, HtmlInputElement, window};
 
 use picker_util::{
-    class, date_8601, date_from_pat, date_pat, date_str_th, datetime_8601, datetime_from_pat, datetime_pat, datetime_str_th, js_now, time_8601, time_from_pat, time_pat, time_str_hm, JsTime
-    
+    JsTime, class, date_8601, date_from_pat, date_pat, date_str_th, datetime_8601,
+    datetime_from_pat, datetime_pat, datetime_str_th, js_now, time_8601, time_from_pat, time_pat,
+    time_str_hm,
 };
 
-use crate::{picker::DatePicker, doms};
+use crate::{doms, picker::DatePicker};
 
 #[derive(Clone)]
 pub enum Picker {
     DateTime,
     Date,
-    Time
+    Time,
 }
 
 /// paired_mutable will use to constrain Date or Time mode<br>
 /// Date mode paired with Time<br>
 /// Time mode paired with Date
-pub fn datetime_input_with_picker<B,C,D,F,S,T> (
+pub fn datetime_input_with_picker<B, C, D, F, S, T>(
     picker: Picker,
     date_mutable: Mutable<String>,
     changed_mutable: Mutable<bool>,
@@ -33,7 +37,7 @@ pub fn datetime_input_with_picker<B,C,D,F,S,T> (
     update_fn: F,
     config_signal: T,
 ) -> Dom
-where 
+where
     B: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     C: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     D: FnOnce(DomBuilder<HtmlInputElement>) -> DomBuilder<HtmlInputElement> + Clone + 'static,

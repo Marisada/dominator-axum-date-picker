@@ -1,18 +1,24 @@
-use dominator::{clone, events, html, with_node, Dom};
+use dominator::{Dom, clone, events, html, with_node};
 use futures_signals::{
     map_ref,
-    signal::{not, Mutable, Signal, SignalExt},
+    signal::{Mutable, Signal, SignalExt, not},
 };
 use std::rc::Rc;
 use time::{Date, Duration, Month, PrimitiveDateTime, Time, Weekday};
 use time_datepicker_core::{
-    config::{PickerConfig, date_constraints::{DateConstraints, HasDateConstraints}},
+    config::{
+        PickerConfig,
+        date_constraints::{DateConstraints, HasDateConstraints},
+    },
     dialog_view_type::DialogViewType,
     utils::{should_display_next_button, should_display_previous_button},
-    viewed_date::{year_group_range, ViewedDate, year_group_start, year_group_end},
+    viewed_date::{ViewedDate, year_group_end, year_group_range, year_group_start},
 };
 
-use picker_util::{class, date_8601, datetime_8601, time_8601, js_now, month_thai, month_thai_full, weekday_thai, JsTime};
+use picker_util::{
+    JsTime, class, date_8601, datetime_8601, js_now, month_thai, month_thai_full, time_8601,
+    weekday_thai,
+};
 
 const DATEPICKER_ROOT: &str = "datepicker-root";
 const DATEPICKER_BACKDROP: &str = "datepicker-backdrop";
@@ -45,7 +51,6 @@ const GRID_HEADER: &str = "datepicker-grid-header";
 const OTHER_MONTH: &str = "datepicker-other-month";
 
 pub struct DatePicker<F: Fn(String) -> String + 'static> {
-
     /// DateTime or Date or Time
     with_date: bool,
     with_time: bool,
@@ -76,7 +81,6 @@ pub struct DatePicker<F: Fn(String) -> String + 'static> {
 }
 
 impl<F: Fn(String) -> String + 'static> DatePicker<F> {
-
     pub fn new_date(
         date_mutable: Mutable<String>,
         changed_mutable: Mutable<bool>,
@@ -88,10 +92,18 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
         let default_datetime = config.guess_allowed_year_month();
         let view_type_adjusted = match config.selection_type() {
             DialogViewType::Days => default_datetime,
-            DialogViewType::Months => PrimitiveDateTime::new(Date::from_calendar_date(default_datetime.year(), default_datetime.month(), 1).unwrap(), default_datetime.time()),
-            DialogViewType::Years => PrimitiveDateTime::new(Date::from_calendar_date(default_datetime.year(), Month::January, 1).unwrap(), default_datetime.time()),
+            DialogViewType::Months => PrimitiveDateTime::new(
+                Date::from_calendar_date(default_datetime.year(), default_datetime.month(), 1)
+                    .unwrap(),
+                default_datetime.time(),
+            ),
+            DialogViewType::Years => PrimitiveDateTime::new(
+                Date::from_calendar_date(default_datetime.year(), Month::January, 1).unwrap(),
+                default_datetime.time(),
+            ),
         };
-        let viewed_date = paired_mutable.and_then(|time_paired| time_8601(&time_paired.get_cloned()))
+        let viewed_date = paired_mutable
+            .and_then(|time_paired| time_8601(&time_paired.get_cloned()))
             .map(|t| PrimitiveDateTime::new(default_datetime.date(), t))
             .unwrap_or(view_type_adjusted);
         Rc::new(Self {
@@ -119,7 +131,8 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
         config: PickerConfig<DateConstraints>,
     ) -> Rc<Self> {
         let default_datetime = config.guess_allowed_year_month() - Duration::days(1);
-        let viewed_date = paired_mutable.and_then(|date_paired| date_8601(&date_paired.get_cloned()))
+        let viewed_date = paired_mutable
+            .and_then(|date_paired| date_8601(&date_paired.get_cloned()))
             .map(|d| PrimitiveDateTime::new(d, default_datetime.time()))
             .unwrap_or(default_datetime);
         Rc::new(Self {
@@ -148,8 +161,15 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
         let default_datetime = config.guess_allowed_year_month();
         let view_type_adjusted = match config.selection_type() {
             DialogViewType::Days => default_datetime,
-            DialogViewType::Months => PrimitiveDateTime::new(Date::from_calendar_date(default_datetime.year(), default_datetime.month(), 1).unwrap(), default_datetime.time()),
-            DialogViewType::Years => PrimitiveDateTime::new(Date::from_calendar_date(default_datetime.year(), Month::February, 1).unwrap(), default_datetime.time()),
+            DialogViewType::Months => PrimitiveDateTime::new(
+                Date::from_calendar_date(default_datetime.year(), default_datetime.month(), 1)
+                    .unwrap(),
+                default_datetime.time(),
+            ),
+            DialogViewType::Years => PrimitiveDateTime::new(
+                Date::from_calendar_date(default_datetime.year(), Month::February, 1).unwrap(),
+                default_datetime.time(),
+            ),
         };
         Rc::new(Self {
             with_date: true,
@@ -172,7 +192,8 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             let viewed_date = picker.viewed_date.signal(),
             let dialog_view_type = picker.dialog_view_type.signal_cloned() =>
             (viewed_date.clone(), *dialog_view_type)
-        }.map(clone!(picker => move |(viewed_date, dialog_view_type)| {
+        }
+        .map(clone!(picker => move |(viewed_date, dialog_view_type)| {
             should_display_previous_button(&dialog_view_type, &viewed_date, &picker.config)
         }))
     }
@@ -182,7 +203,8 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             let viewed_date = picker.viewed_date.signal(),
             let dialog_view_type = picker.dialog_view_type.signal_cloned() =>
             (viewed_date.clone(), *dialog_view_type)
-        }.map(clone!(picker => move |(viewed_date, dialog_view_type)| {
+        }
+        .map(clone!(picker => move |(viewed_date, dialog_view_type)| {
             should_display_next_button(&dialog_view_type, &viewed_date, &picker.config)
         }))
     }
@@ -201,16 +223,28 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             let new_time = Time::from_hms(hour, minute, display_date.second()).unwrap();
             let new_date = match view_type {
                 DialogViewType::Days => PrimitiveDateTime::new(display_date.date(), new_time),
-                DialogViewType::Months => PrimitiveDateTime::new(Date::from_calendar_date(display_date.year(), display_date.month(), 1).unwrap(), new_time),
-                DialogViewType::Years => PrimitiveDateTime::new(Date::from_calendar_date(display_date.year(), Month::January, 1).unwrap(), new_time),
+                DialogViewType::Months => PrimitiveDateTime::new(
+                    Date::from_calendar_date(display_date.year(), display_date.month(), 1).unwrap(),
+                    new_time,
+                ),
+                DialogViewType::Years => PrimitiveDateTime::new(
+                    Date::from_calendar_date(display_date.year(), Month::January, 1).unwrap(),
+                    new_time,
+                ),
             };
             self.apply_update_fn_and_set_mutable(new_date.js_string());
             self.container.set(None);
         } else {
             let new_date = match view_type {
                 DialogViewType::Days => display_date,
-                DialogViewType::Months => PrimitiveDateTime::new(Date::from_calendar_date(display_date.year(), display_date.month(), 1).unwrap(), display_date.time()),
-                DialogViewType::Years => PrimitiveDateTime::new(Date::from_calendar_date(display_date.year(), Month::January, 1).unwrap(), display_date.time()),
+                DialogViewType::Months => PrimitiveDateTime::new(
+                    Date::from_calendar_date(display_date.year(), display_date.month(), 1).unwrap(),
+                    display_date.time(),
+                ),
+                DialogViewType::Years => PrimitiveDateTime::new(
+                    Date::from_calendar_date(display_date.year(), Month::January, 1).unwrap(),
+                    display_date.time(),
+                ),
             };
             if self.with_time {
                 // datetime mode, time not selected
@@ -219,7 +253,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             } else {
                 // date mode
                 self.apply_update_fn_and_set_mutable(new_date.date().to_string());
-                self.container.set(None); 
+                self.container.set(None);
             }
         }
     }
@@ -294,7 +328,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                     .attr("type", "button")
                     .class([BUTTON, PREVIOUS])
                     .style_signal("visibility", Self::should_display_previous_button(picker.clone()).map(|display| {
-                        if display { 
+                        if display {
                             "visible"
                         } else {
                             "hidden"
@@ -325,7 +359,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                     .attr("type", "button")
                     .class([BUTTON, NEXT])
                     .style_signal("visibility", Self::should_display_next_button(picker.clone()).map(|display| {
-                        if display { 
+                        if display {
                             "visible"
                         } else {
                             "hidden"
@@ -356,7 +390,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                 .attr("type", "button")
                 .class([BUTTON, EMPTY])
                 .style_signal("visibility", picker.selected_date.signal_cloned().map(|opt| {
-                    if opt.is_some() { 
+                    if opt.is_some() {
                         "visible"
                     } else {
                         "hidden"
@@ -655,10 +689,15 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
         })
     }
 
-    fn is_hour_forbidden_signal(picker: Rc<Self>, display_hour: u8) -> impl Signal<Item = bool> + use<F> {
+    fn is_hour_forbidden_signal(
+        picker: Rc<Self>,
+        display_hour: u8,
+    ) -> impl Signal<Item = bool> + use<F> {
         picker.viewed_date.signal().map(move |dt| {
-            let min = PrimitiveDateTime::new(dt.date(), Time::from_hms(display_hour, 0, 0).unwrap());
-            let max = PrimitiveDateTime::new(dt.date(), Time::from_hms(display_hour, 59, 59).unwrap());
+            let min =
+                PrimitiveDateTime::new(dt.date(), Time::from_hms(display_hour, 0, 0).unwrap());
+            let max =
+                PrimitiveDateTime::new(dt.date(), Time::from_hms(display_hour, 59, 59).unwrap());
             picker.config.is_datetime_forbidden(&min) && picker.config.is_datetime_forbidden(&max)
         })
     }
@@ -684,7 +723,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                         picker.container.set(None);
                     } else {
                         // display_hour was pre-defined, cannot panic
-                        let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(display_hour, minute, viewed_date.second()).unwrap()); 
+                        let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(display_hour, minute, viewed_date.second()).unwrap());
                         if picker.with_date {
                             // datetime mode, date not selected, minute selected
                             picker.selected_hour.set(Some(display_hour));
@@ -696,7 +735,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                         }
                     }
                 } else {
-                    // any mode, minute not selected 
+                    // any mode, minute not selected
                     picker.selected_hour.set(Some(display_hour));
                     // display_hour was pre-defined, cannot panic
                     let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(display_hour, viewed_date.minute(), viewed_date.second()).unwrap());
@@ -732,10 +771,19 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
         })
     }
 
-    fn is_minute_forbidden_signal(picker: Rc<Self>, display_minute: u8) -> impl Signal<Item = bool> + use<F> {
+    fn is_minute_forbidden_signal(
+        picker: Rc<Self>,
+        display_minute: u8,
+    ) -> impl Signal<Item = bool> + use<F> {
         picker.viewed_date.signal_cloned().map(move |dt| {
-            let min = PrimitiveDateTime::new(dt.date(), Time::from_hms(dt.hour(), display_minute, 0).unwrap());
-            let max = PrimitiveDateTime::new(dt.date(), Time::from_hms(dt.hour(), display_minute, 59).unwrap());
+            let min = PrimitiveDateTime::new(
+                dt.date(),
+                Time::from_hms(dt.hour(), display_minute, 0).unwrap(),
+            );
+            let max = PrimitiveDateTime::new(
+                dt.date(),
+                Time::from_hms(dt.hour(), display_minute, 59).unwrap(),
+            );
             picker.config.is_datetime_forbidden(&min) && picker.config.is_datetime_forbidden(&max)
         })
     }
@@ -761,7 +809,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                         picker.container.set(None);
                     } else {
                         // display_minute was pre-defined, cannot panic
-                        let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(hour, display_minute, viewed_date.second()).unwrap()); 
+                        let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(hour, display_minute, viewed_date.second()).unwrap());
                         if picker.with_date {
                             // datetime mode, date not selected, hour selected
                             picker.selected_minute.set(Some(display_minute));
@@ -773,7 +821,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                         }
                     }
                 } else {
-                    // any mode, hour not selected 
+                    // any mode, hour not selected
                     picker.selected_minute.set(Some(display_minute));
                     // display_hour was pre-defined, cannot panic
                     let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(viewed_date.hour(), display_minute, viewed_date.second()).unwrap());
@@ -806,9 +854,12 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             if let Some(selected_date) = self.selected_date.get_cloned() {
                 let iso = if self.with_time {
                     // always use new select_hour and select_minute
-                    if let (Some(selected_hour), Some(selected_minute)) = (self.selected_hour.get(), self.selected_minute.get()) {
+                    if let (Some(selected_hour), Some(selected_minute)) =
+                        (self.selected_hour.get(), self.selected_minute.get())
+                    {
                         // selected_hour and selected_minute comes from defined valid value, cannot panic
-                        let selected_time = Time::from_hms(selected_hour, selected_minute, 0).unwrap();
+                        let selected_time =
+                            Time::from_hms(selected_hour, selected_minute, 0).unwrap();
                         PrimitiveDateTime::new(selected_date.date(), selected_time).js_string()
                     } else {
                         String::new()
@@ -823,7 +874,9 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                 }
             }
         } else if self.with_time {
-            if let (Some(selected_hour), Some(selected_minute)) = (self.selected_hour.get(), self.selected_minute.get()) {
+            if let (Some(selected_hour), Some(selected_minute)) =
+                (self.selected_hour.get(), self.selected_minute.get())
+            {
                 // selected_hour and selected_minute comes from defined valid value, cannot panic
                 let selected_time = Time::from_hms(selected_hour, selected_minute, 0).unwrap();
                 self.apply_update_fn_and_set_mutable(selected_time.js_string());
@@ -862,12 +915,13 @@ fn render_weekday_name(day: Weekday) -> Dom {
 }
 
 /// Creates the text that should be the title of the datepicker dialog.
-pub fn create_dialog_title_text(
-    dialog_view_type: &DialogViewType,
-    viewed_date: &Date,
-) -> String {
+pub fn create_dialog_title_text(dialog_view_type: &DialogViewType, viewed_date: &Date) -> String {
     match dialog_view_type {
-        DialogViewType::Days => format!("{} {}", month_thai_full(&viewed_date.month()), viewed_date.year() + 543),
+        DialogViewType::Days => format!(
+            "{} {}",
+            month_thai_full(&viewed_date.month()),
+            viewed_date.year() + 543
+        ),
         DialogViewType::Months => (viewed_date.year() + 543).to_string(),
         DialogViewType::Years => format!(
             "{} - {}",
@@ -880,11 +934,11 @@ pub fn create_dialog_title_text(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use time_datepicker_core::{
-        viewed_date::{YearNumber, MonthNumber, DayNumber},
-        utils::from_ymd,
-    };
     use rstest::*;
+    use time_datepicker_core::{
+        utils::from_ymd,
+        viewed_date::{DayNumber, MonthNumber, YearNumber},
+    };
 
     #[fixture(year = 1990, month = 1, day = 1)]
     fn create_date(year: YearNumber, month: MonthNumber, day: DayNumber) -> Date {
@@ -892,10 +946,12 @@ mod tests {
     }
 
     #[rstest(
-        expected, dialog_view_type, viewed_date,
+        expected,
+        dialog_view_type,
+        viewed_date,
         case::days_default("มกราคม 2533", DialogViewType::Days, create_date(1990, 1, 1)),
         case::months("2533", DialogViewType::Months, create_date(1990, 1, 1)),
-        case::years("2520 - 2539", DialogViewType::Years, create_date(1990, 1, 1)),
+        case::years("2520 - 2539", DialogViewType::Years, create_date(1990, 1, 1))
     )]
     fn test_create_dialog_title_text(
         expected: &str,

@@ -1,18 +1,18 @@
 use axum::{
+    Router,
     body::Body,
     http::{
-        header::{self, HeaderValue},
         Request,
+        header::{self, HeaderValue},
     },
     routing::get,
-    Router,
 };
 use std::time::Duration;
 use tower_cookies::CookieManagerLayer;
 use tower_http::{
     compression::{
-        predicate::{NotForContentType, Predicate, SizeAbove},
         CompressionLayer,
+        predicate::{NotForContentType, Predicate, SizeAbove},
     },
     set_header::SetResponseHeaderLayer,
     timeout::TimeoutLayer,

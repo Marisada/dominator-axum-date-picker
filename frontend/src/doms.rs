@@ -1,11 +1,14 @@
 pub use time_datepicker_core::{
-    config::{date_constraints::DateConstraintsBuilder, PickerConfigBuilder},
+    config::{PickerConfigBuilder, date_constraints::DateConstraintsBuilder},
     dialog_view_type::DialogViewType,
 };
 
-use dominator::{clone, Dom, DomBuilder, html, window_size, window_offset};
-use futures_signals::{map_ref, signal::{Mutable, Signal, SignalExt}};
-use time_datepicker_core::config::{date_constraints::DateConstraints, PickerConfig};
+use dominator::{Dom, DomBuilder, clone, html, window_offset, window_size};
+use futures_signals::{
+    map_ref,
+    signal::{Mutable, Signal, SignalExt},
+};
+use time_datepicker_core::config::{PickerConfig, date_constraints::DateConstraints};
 use web_sys::{DomRect, HtmlElement, HtmlInputElement};
 
 use super::datetime_pickers;
@@ -15,11 +18,11 @@ use super::datetime_pickers;
 /// - `container_mixin`: ex. `|dom| {dom}`
 /// - `label_mixin`: apply to label element, ex. `|dom| dom.class("form-control-sm")`
 /// - `input_mixin`: apply to input element, ex. `|dom| dom.class("form-control-sm")`
-/// 
+///
 /// `NOTE`: under `input-group` parent
 /// - use `d-flex` and `flex-grow-1` classes to `container_mixin`
 /// - use `rounded-0` or `rounded-start-0` or `rounded-end-0` class to `label_mixin` and `input_mixin`
-pub fn datetime_picker<B,C,D,F,S,T> (
+pub fn datetime_picker<B, C, D, F, S, T>(
     datetime_mutable: Mutable<String>,
     changed_mutable: Mutable<bool>,
     disable_signal: S,
@@ -29,7 +32,7 @@ pub fn datetime_picker<B,C,D,F,S,T> (
     update_fn: F,
     config_signal: T,
 ) -> Dom
-where 
+where
     B: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     C: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     D: FnOnce(DomBuilder<HtmlInputElement>) -> DomBuilder<HtmlInputElement> + Clone + 'static,
@@ -57,11 +60,11 @@ where
 /// - `container_mixin`: ex. `|dom| {dom}`
 /// - `label_mixin`: apply to label element, ex. `|dom| dom.class("form-control-sm")`
 /// - `input_mixin`: apply to input element, ex. `|dom| dom.class("form-control-sm")`
-/// 
+///
 /// `NOTE`: under `input-group` parent
 /// - use `d-flex` and `flex-grow-1` classes to `container_mixin`
 /// - use `rounded-0` or `rounded-start-0` or `rounded-end-0` class to `label_mixin` and `input_mixin`
-pub fn date_picker<B,C,D,F,S,T> (
+pub fn date_picker<B, C, D, F, S, T>(
     date_mutable: Mutable<String>,
     changed_mutable: Mutable<bool>,
     disable_signal: S,
@@ -72,7 +75,7 @@ pub fn date_picker<B,C,D,F,S,T> (
     update_fn: F,
     config_signal: T,
 ) -> Dom
-where 
+where
     B: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     C: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     D: FnOnce(DomBuilder<HtmlInputElement>) -> DomBuilder<HtmlInputElement> + Clone + 'static,
@@ -100,11 +103,11 @@ where
 /// - `container_mixin`: ex. `|dom| {dom}`
 /// - `label_mixin`: apply to label element, ex. `|dom| dom.class("form-control-sm")`
 /// - `input_mixin`: apply to input element, ex. `|dom| dom.class("form-control-sm")`
-/// 
+///
 /// `NOTE`: under `input-group` parent
 /// - use `d-flex` and `flex-grow-1` classes to `container_mixin`
 /// - use `rounded-0` or `rounded-start-0` or `rounded-end-0` class to `label_mixin` and `input_mixin`
-pub fn time_picker<B,C,D,F,S,T> (
+pub fn time_picker<B, C, D, F, S, T>(
     time_mutable: Mutable<String>,
     changed_mutable: Mutable<bool>,
     disable_signal: S,
@@ -115,7 +118,7 @@ pub fn time_picker<B,C,D,F,S,T> (
     update_fn: F,
     config_signal: T,
 ) -> Dom
-where 
+where
     B: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     C: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
     D: FnOnce(DomBuilder<HtmlInputElement>) -> DomBuilder<HtmlInputElement> + Clone + 'static,
@@ -138,7 +141,13 @@ where
 }
 
 /// Box that will `fixed` appear under another `box with id`
-pub fn under_box<F>(anchor_rect: DomRect, max_width: f64, max_height: f64, page_y_offset: f64, mixins: F) -> Dom
+pub fn under_box<F>(
+    anchor_rect: DomRect,
+    max_width: f64,
+    max_height: f64,
+    page_y_offset: f64,
+    mixins: F,
+) -> Dom
 where
     F: FnOnce(DomBuilder<HtmlElement>) -> DomBuilder<HtmlElement>,
 {

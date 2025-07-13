@@ -1,6 +1,9 @@
 pub mod class;
 
-use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, Duration, Weekday, format_description::well_known::Iso8601, macros::offset};
+use time::{
+    Date, Duration, Month, OffsetDateTime, PrimitiveDateTime, Time, Weekday,
+    format_description::well_known::Iso8601, macros::offset,
+};
 
 pub trait JsTime {
     fn js_string(&self) -> String;
@@ -46,7 +49,9 @@ pub fn now() -> PrimitiveDateTime {
 
 /// GMT +7 datetime
 pub fn js_now() -> PrimitiveDateTime {
-    let local = OffsetDateTime::from_unix_timestamp(get_now_wasm() as i64).unwrap().to_offset(offset!(+7));
+    let local = OffsetDateTime::from_unix_timestamp(get_now_wasm() as i64)
+        .unwrap()
+        .to_offset(offset!(+7));
     PrimitiveDateTime::new(local.date(), local.time())
 }
 
@@ -73,7 +78,11 @@ pub fn datetime_8601(text: &str) -> Option<PrimitiveDateTime> {
     let date = date_8601(dt[0]);
     let time = time_8601(dt[1]);
 
-    if let (Some(d), Some(t)) = (date, time) { Some(PrimitiveDateTime::new(d, t)) } else { None }
+    if let (Some(d), Some(t)) = (date, time) {
+        Some(PrimitiveDateTime::new(d, t))
+    } else {
+        None
+    }
 }
 /// parse ISO-8601 string to time::Date, error will be `None`
 pub fn date_8601(text: &str) -> Option<Date> {
@@ -115,7 +124,10 @@ pub fn datetime_th_relative(date_time: &PrimitiveDateTime) -> String {
 }
 /// parse PrimitiveDateTime to Thai string `24 ส.ค.2521 05:25 น.`
 pub fn datetime_th_opt_relative(date_time_opt: &Option<PrimitiveDateTime>) -> String {
-    date_time_opt.as_ref().map(datetime_th_relative).unwrap_or_default()
+    date_time_opt
+        .as_ref()
+        .map(datetime_th_relative)
+        .unwrap_or_default()
 }
 /// parse Date to Thai string `24 ส.ค.2521`
 pub fn date_th(date: &Date) -> String {
@@ -188,9 +200,15 @@ pub fn duration_hm(duration: Duration) -> String {
     let hours = secs / 3600;
     let minutes = (secs % 3600) / 60;
     [
-        (hours != 0).then(|| [&hours.to_string(), " ชั่วโมง"].concat()).unwrap_or_default(),
-        (hours != 0 && minutes != 0).then(|| String::from(" ")).unwrap_or_default(),
-        (minutes != 0).then(|| [&minutes.to_string(), " นาที"].concat()).unwrap_or_default(),
+        (hours != 0)
+            .then(|| [&hours.to_string(), " ชั่วโมง"].concat())
+            .unwrap_or_default(),
+        (hours != 0 && minutes != 0)
+            .then(|| String::from(" "))
+            .unwrap_or_default(),
+        (minutes != 0)
+            .then(|| [&minutes.to_string(), " นาที"].concat())
+            .unwrap_or_default(),
     ]
     .concat()
 }
@@ -231,47 +249,70 @@ pub fn datetime_from_pat(text: &str) -> Option<PrimitiveDateTime> {
     let date = date_from_pat(dt[0]);
     let time = time_from_pat(dt[1]);
 
-    if let (Some(d), Some(t)) = (date, time) { Some(PrimitiveDateTime::new(d, t)) } else { None }
+    if let (Some(d), Some(t)) = (date, time) {
+        Some(PrimitiveDateTime::new(d, t))
+    } else {
+        None
+    }
 }
 /// parse Buddhism `DDMMYYYY` or `DD/MM/YYYY` string to time::Date, error will be `None`<br>
 /// any `NOT-NUMERIC` seperate supported
 pub fn date_from_pat(text: &str) -> Option<Date> {
     // try str.split() method fitst, not allocate, faster
     // failover with str.chars() method, allocate, slower
-    if text.contains(['/','-','.',':']) {
-        let dmy = text.split(['/','-','.',':']).map(str::trim).collect::<Vec<&str>>();
+    if text.contains(['/', '-', '.', ':']) {
+        let dmy = text
+            .split(['/', '-', '.', ':'])
+            .map(str::trim)
+            .collect::<Vec<&str>>();
         if dmy.len() > 2 {
-            if let (Some(d), Some(m), Some(y)) = (dmy[0].parse::<u8>().ok(), dmy[1].parse::<u8>().ok(), dmy[2].parse::<i32>().ok()) {
+            if let (Some(d), Some(m), Some(y)) = (
+                dmy[0].parse::<u8>().ok(),
+                dmy[1].parse::<u8>().ok(),
+                dmy[2].parse::<i32>().ok(),
+            ) {
                 let decate = ((js_now().year() + 543) / 100) * 100;
-                date_from_pat_inner(d, m, if y > 543 {y} else {y + decate} - 543)  
+                date_from_pat_inner(d, m, if y > 543 { y } else { y + decate } - 543)
             } else {
                 None
-            } 
+            }
         } else {
             None
         }
     } else {
-        let c = text.chars().filter(|c| c.is_numeric()).collect::<Vec<char>>();
+        let c = text
+            .chars()
+            .filter(|c| c.is_numeric())
+            .collect::<Vec<char>>();
         match c.len() {
             6..8 => {
-                let dmy = c.chunks(2).map(|tuple| String::from_iter(tuple)).collect::<Vec<String>>();
-                if let (Some(d), Some(m), Some(y)) = (dmy[0].parse::<u8>().ok(), dmy[1].parse::<u8>().ok(), dmy[2].parse::<i32>().ok()) {
+                let dmy = c
+                    .chunks(2)
+                    .map(|tuple| String::from_iter(tuple))
+                    .collect::<Vec<String>>();
+                if let (Some(d), Some(m), Some(y)) = (
+                    dmy[0].parse::<u8>().ok(),
+                    dmy[1].parse::<u8>().ok(),
+                    dmy[2].parse::<i32>().ok(),
+                ) {
                     let decate = ((js_now().year() + 543) / 100) * 100;
-                    date_from_pat_inner(d, m, y + decate - 543)                   
+                    date_from_pat_inner(d, m, y + decate - 543)
                 } else {
                     None
-                }  
+                }
             }
             8.. => {
                 if let (Some(d), Some(m), Some(y)) = (
                     String::from_iter([c[0], c[1]]).parse::<u8>().ok(),
                     String::from_iter([c[2], c[3]]).parse::<u8>().ok(),
-                    String::from_iter([c[4], c[5], c[6], c[7]]).parse::<i32>().ok(),
+                    String::from_iter([c[4], c[5], c[6], c[7]])
+                        .parse::<i32>()
+                        .ok(),
                 ) {
-                    date_from_pat_inner(d, m, if y > 543 {y - 543} else {y})
+                    date_from_pat_inner(d, m, if y > 543 { y - 543 } else { y })
                 } else {
                     None
-                } 
+                }
             }
             _ => None,
         }
@@ -296,43 +337,60 @@ fn date_from_pat_inner(d: u8, m: u8, y: i32) -> Option<Date> {
 pub fn time_from_pat(text: &str) -> Option<Time> {
     // try str.split() method fitst, not allocate, faster
     // failover with str.chars() method, allocate, slower
-    if text.contains(['/','-','.',':']) {
-        let hm = text.split(['/','-','.',':']).map(str::trim).collect::<Vec<&str>>();
+    if text.contains(['/', '-', '.', ':']) {
+        let hm = text
+            .split(['/', '-', '.', ':'])
+            .map(str::trim)
+            .collect::<Vec<&str>>();
         if hm.len() > 1 {
             time_from_pat_inner(hm[0].parse::<u8>().ok(), hm[1].parse::<u8>().ok())
         } else {
             None
         }
     } else {
-        let c = text.chars().filter(|c| c.is_numeric()).collect::<Vec<char>>();
+        let c = text
+            .chars()
+            .filter(|c| c.is_numeric())
+            .collect::<Vec<char>>();
         match c.len() {
             4.. => {
-                let hm = c.chunks(2).take(2).map(|tuple| String::from_iter(tuple)).collect::<Vec<String>>();
+                let hm = c
+                    .chunks(2)
+                    .take(2)
+                    .map(|tuple| String::from_iter(tuple))
+                    .collect::<Vec<String>>();
                 time_from_pat_inner(hm[0].parse::<u8>().ok(), hm[1].parse::<u8>().ok())
             }
             3 => {
-                let end_two = String::from_iter([c[1],c[2]]).parse::<u8>().ok();
+                let end_two = String::from_iter([c[1], c[2]]).parse::<u8>().ok();
                 if end_two.map(|u| u > 60).unwrap_or_default() {
-                    let first_two = String::from_iter([c[0],c[1]]).parse::<u8>().ok();
+                    let first_two = String::from_iter([c[0], c[1]]).parse::<u8>().ok();
                     if first_two.map(|u| u < 24).unwrap_or_default() {
-                        time_from_pat_inner(String::from_iter([c[0],c[1]]).parse::<u8>().ok(), String::from_iter([c[2]]).parse::<u8>().ok())
+                        time_from_pat_inner(
+                            String::from_iter([c[0], c[1]]).parse::<u8>().ok(),
+                            String::from_iter([c[2]]).parse::<u8>().ok(),
+                        )
                     } else {
                         None
                     }
                 } else {
-                    time_from_pat_inner(String::from_iter([c[0]]).parse::<u8>().ok(), String::from_iter([c[1],c[2]]).parse::<u8>().ok())
+                    time_from_pat_inner(
+                        String::from_iter([c[0]]).parse::<u8>().ok(),
+                        String::from_iter([c[1], c[2]]).parse::<u8>().ok(),
+                    )
                 }
             }
             2 => {
-                if (c[0] == '1') || (c[0] == '2' && ['0','1','2','3'].contains(&c[1])) {
-                    time_from_pat_inner(String::from_iter([c[0],c[1]]).parse::<u8>().ok(), Some(0))
+                if (c[0] == '1') || (c[0] == '2' && ['0', '1', '2', '3'].contains(&c[1])) {
+                    time_from_pat_inner(String::from_iter([c[0], c[1]]).parse::<u8>().ok(), Some(0))
                 } else {
-                    time_from_pat_inner(String::from_iter([c[0]]).parse::<u8>().ok(), String::from_iter([c[1]]).parse::<u8>().ok())
+                    time_from_pat_inner(
+                        String::from_iter([c[0]]).parse::<u8>().ok(),
+                        String::from_iter([c[1]]).parse::<u8>().ok(),
+                    )
                 }
             }
-            1 => {
-                time_from_pat_inner(String::from_iter([c[0]]).parse::<u8>().ok(), Some(0))
-            }
+            1 => time_from_pat_inner(String::from_iter([c[0]]).parse::<u8>().ok(), Some(0)),
             0 => None,
         }
     }
@@ -342,7 +400,7 @@ fn time_from_pat_inner(h_opt: Option<u8>, m_opt: Option<u8>) -> Option<Time> {
         Time::from_hms(h, m, 0).ok()
     } else {
         None
-    }  
+    }
 }
 
 // ===== ===== //

@@ -1,14 +1,14 @@
-use dominator::{clone, events, html, Dom, with_node};
-use futures_signals::signal::{always, not, Mutable, SignalExt};
-use time::{Duration, PrimitiveDateTime, Date, Time, Weekday};
-use web_sys::HtmlInputElement;
+use dominator::{Dom, clone, events, html, with_node};
+use futures_signals::signal::{Mutable, SignalExt, always, not};
+use time::{Date, Duration, PrimitiveDateTime, Time, Weekday};
 use wasm_bindgen::prelude::*;
+use web_sys::HtmlInputElement;
 
 mod datetime_pickers;
 mod doms;
 mod picker;
 
-use picker_util::{class, JsTime, js_now, date_8601, time_8601, datetime_8601, datetime_th};
+use picker_util::{JsTime, class, date_8601, datetime_8601, datetime_th, js_now, time_8601};
 
 #[wasm_bindgen(start)]
 pub fn main_js() {
@@ -22,7 +22,6 @@ pub fn main_js() {
 }
 
 fn render() -> Dom {
-
     let is_dark_mutable = Mutable::new(false);
     let disable_mutable = Mutable::new(false);
     let changed_mutable = Mutable::new(false);
@@ -34,10 +33,19 @@ fn render() -> Dom {
     let datetime_mutable = Mutable::new(String::new());
 
     let now = js_now();
-    let now_datetime = PrimitiveDateTime::new(now.date(), Time::from_hms(now.hour(), now.minute(), 0).unwrap());
-    let min_datetime_label = ["เงื่อนไข ไม่ก่อน ", &datetime_th(&now_datetime), " และไม่ใช่วันพุธ"].concat();
-    let max_datetime_label = ["เงื่อนไข ไม่หลัง ", &datetime_th(&now_datetime), " และไม่ใช่วันที่ 1,9,17,25"].concat();
-    
+    let now_datetime = PrimitiveDateTime::new(
+        now.date(),
+        Time::from_hms(now.hour(), now.minute(), 0).unwrap(),
+    );
+    let min_datetime_label =
+        ["เงื่อนไข ไม่ก่อน ", &datetime_th(&now_datetime), " และไม่ใช่วันพุธ"].concat();
+    let max_datetime_label = [
+        "เงื่อนไข ไม่หลัง ",
+        &datetime_th(&now_datetime),
+        " และไม่ใช่วันที่ 1,9,17,25",
+    ]
+    .concat();
+
     html!("div", {
         .attr_signal("data-bs-theme", is_dark_mutable.signal().map(|is_dark| if is_dark {"dark"} else {"light"}))
         .class("p-3")
@@ -384,7 +392,7 @@ fn render() -> Dom {
                                     .date_constraints(doms::DateConstraintsBuilder::default()
                                         .disabled_weekdays([Weekday::Wednesday].into())
                                         .min_datetime(now_datetime)
-                                        .build().unwrap()  
+                                        .build().unwrap()
                                     ).build().unwrap()
                                 ))
                             }))
@@ -399,7 +407,7 @@ fn render() -> Dom {
                                     .date_constraints(doms::DateConstraintsBuilder::default()
                                         .disabled_monthly_dates([1,9,17,25].into())
                                         .max_datetime(now_datetime)
-                                        .build().unwrap()  
+                                        .build().unwrap()
                                     ).build().unwrap()
                                 ))
                             }))
@@ -413,7 +421,7 @@ fn render() -> Dom {
                                 config_mutable.set(Some(doms::PickerConfigBuilder::default()
                                     .date_constraints(doms::DateConstraintsBuilder::default()
                                         .min_datetime(PrimitiveDateTime::new(Date::from_calendar_date(now.year(), now.month(), 1).unwrap(), Time::MIDNIGHT))
-                                        .build().unwrap()  
+                                        .build().unwrap()
                                     )
                                     .selection_type(doms::DialogViewType::Months)
                                     .initial_view_type(doms::DialogViewType::Months)
@@ -430,7 +438,7 @@ fn render() -> Dom {
                                 config_mutable.set(Some(doms::PickerConfigBuilder::default()
                                     .date_constraints(doms::DateConstraintsBuilder::default()
                                         .min_datetime(PrimitiveDateTime::new(Date::from_calendar_date(now.year(), time::Month::January, 1).unwrap(), Time::MIDNIGHT))
-                                        .build().unwrap()  
+                                        .build().unwrap()
                                     )
                                     .selection_type(doms::DialogViewType::Years)
                                     .initial_view_type(doms::DialogViewType::Years)

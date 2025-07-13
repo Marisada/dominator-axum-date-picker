@@ -1,7 +1,7 @@
 mod handlers;
 mod route;
 
-use axum::{handler::HandlerWithoutStateExt, http::StatusCode, Router};
+use axum::{Router, handler::HandlerWithoutStateExt, http::StatusCode};
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing::info;
