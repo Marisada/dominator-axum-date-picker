@@ -264,14 +264,23 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                 html!("div", {
                     .future(picker.date_mutable.signal_cloned().for_each(clone!(picker => move |date_mutable| {
                         if picker.with_date && picker.with_time {
+                            // datetime mode
                             let datetime_opt = datetime_8601(&date_mutable).or(*picker.config.initial_date());
                             picker.selected_date.set(datetime_opt);
                             picker.selected_hour.set(datetime_opt.map(|dt| dt.hour()));
                             picker.selected_minute.set(datetime_opt.map(|dt| dt.minute()));
+                            if let Some(datetime) = datetime_opt {
+                                picker.viewed_date.set(datetime);
+                            }
                         } else if picker.with_date {
-                            let date_opt = date_8601(&date_mutable).or(picker.config.initial_date().map(|dt| dt.date()));
-                            picker.selected_date.set(date_opt.map(|d| PrimitiveDateTime::new(d, Time::MIDNIGHT)));
+                            // date mode
+                            let date_opt = date_8601(&date_mutable).or(picker.config.initial_date().map(|dt| dt.date())).map(|d| PrimitiveDateTime::new(d, Time::MIDNIGHT));
+                            picker.selected_date.set(date_opt);
+                            if let Some(date) = date_opt {
+                                picker.viewed_date.set(date);
+                            }
                         } else if picker.with_time {
+                            // time mode
                             let time_opt = time_8601(&date_mutable).or(picker.config.initial_date().map(|dt| dt.time()));
                             picker.selected_hour.set(time_opt.map(|t| t.hour()));
                             picker.selected_minute.set(time_opt.map(|t| t.minute()));
@@ -569,6 +578,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                 if picker.config.selection_type() == &DialogViewType::Years {
                     picker.set_date(display_year, DialogViewType::Years);
                 } else {
+                    picker.viewed_date.set(display_year);
                     picker.dialog_view_type.set(DialogViewType::Months);
                 }
             }))
@@ -609,6 +619,7 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
                 if picker.config.selection_type() == &DialogViewType::Months {
                     picker.set_date(display_month, DialogViewType::Months);
                 } else {
+                    picker.viewed_date.set(display_month);
                     picker.dialog_view_type.set(DialogViewType::Days);
                 }
             }))
@@ -714,34 +725,35 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             .class_signal(SELECTABLE, not(Self::is_hour_forbidden_signal(picker.clone(), display_hour)))
             .event(clone!(picker => move |_:events::Click| {
                 let viewed_date = picker.viewed_date.get_cloned();
-                if let Some(minute) = picker.selected_minute.get() {
-                    if picker.with_date && let Some(selected_date) = picker.selected_date.get() {
-                        // datetime mode, date and minute selected
-                        // display_hour was pre-defined, cannot panic
-                        let new_date = PrimitiveDateTime::new(selected_date.date(), Time::from_hms(display_hour, minute, selected_date.second()).unwrap());
-                        picker.apply_update_fn_and_set_mutable(new_date.js_string());
-                        picker.container.set(None);
-                    } else {
-                        // display_hour was pre-defined, cannot panic
-                        let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(display_hour, minute, viewed_date.second()).unwrap());
-                        if picker.with_date {
-                            // datetime mode, date not selected, minute selected
-                            picker.selected_hour.set(Some(display_hour));
-                            picker.viewed_date.set(new_date);
-                        } else {
-                            // time mode, minute selected
-                            picker.apply_update_fn_and_set_mutable(new_date.time().js_string());
-                            picker.container.set(None);
-                        }
-                    }
-                } else {
-                    // any mode, minute not selected
+                // // allow click to save and exit
+                // if let Some(minute) = picker.selected_minute.get() {
+                //     if picker.with_date && let Some(selected_date) = picker.selected_date.get() {
+                //         // datetime mode, date and minute selected
+                //         // display_hour was pre-defined, cannot panic
+                //         let new_date = PrimitiveDateTime::new(selected_date.date(), Time::from_hms(display_hour, minute, selected_date.second()).unwrap());
+                //         picker.apply_update_fn_and_set_mutable(new_date.js_string());
+                //         picker.container.set(None);
+                //     } else {
+                //         // display_hour was pre-defined, cannot panic
+                //         let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(display_hour, minute, viewed_date.second()).unwrap());
+                //         if picker.with_date {
+                //             // datetime mode, date not selected, minute selected
+                //             picker.selected_hour.set(Some(display_hour));
+                //             picker.viewed_date.set(new_date);
+                //         } else {
+                //             // time mode, minute selected
+                //             picker.apply_update_fn_and_set_mutable(new_date.time().js_string());
+                //             picker.container.set(None);
+                //         }
+                //     }
+                // } else {
+                //    // any mode, minute not selected
                     picker.selected_hour.set(Some(display_hour));
                     // display_hour was pre-defined, cannot panic
                     let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(display_hour, viewed_date.minute(), viewed_date.second()).unwrap());
                     picker.viewed_date.set(new_date);
                     picker.selected_date.set(Some(new_date));
-                }
+                // }
             }))
         })
     }
@@ -800,34 +812,35 @@ impl<F: Fn(String) -> String + 'static> DatePicker<F> {
             .class_signal(SELECTABLE, not(Self::is_minute_forbidden_signal(picker.clone(), display_minute)))
             .event(clone!(picker => move |_:events::Click| {
                 let viewed_date = picker.viewed_date.get_cloned();
-                if let Some(hour) = picker.selected_hour.get() {
-                    if picker.with_date && let Some(selected_date) = picker.selected_date.get() {
-                        // datetime mode, date and hour selected
-                        // display_minute was pre-defined, cannot panic
-                        let new_date = PrimitiveDateTime::new(selected_date.date(), Time::from_hms(hour, display_minute, selected_date.second()).unwrap());
-                        picker.apply_update_fn_and_set_mutable(new_date.js_string());
-                        picker.container.set(None);
-                    } else {
-                        // display_minute was pre-defined, cannot panic
-                        let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(hour, display_minute, viewed_date.second()).unwrap());
-                        if picker.with_date {
-                            // datetime mode, date not selected, hour selected
-                            picker.selected_minute.set(Some(display_minute));
-                            picker.viewed_date.set(new_date);
-                        } else {
-                            // time mode, hour selected
-                            picker.apply_update_fn_and_set_mutable(new_date.time().js_string());
-                            picker.container.set(None);
-                        }
-                    }
-                } else {
-                    // any mode, hour not selected
+                // // allow click to save and exit
+                // if let Some(hour) = picker.selected_hour.get() {
+                //     if picker.with_date && let Some(selected_date) = picker.selected_date.get() {
+                //         // datetime mode, date and hour selected
+                //         // display_minute was pre-defined, cannot panic
+                //         let new_date = PrimitiveDateTime::new(selected_date.date(), Time::from_hms(hour, display_minute, selected_date.second()).unwrap());
+                //         picker.apply_update_fn_and_set_mutable(new_date.js_string());
+                //         picker.container.set(None);
+                //     } else {
+                //         // display_minute was pre-defined, cannot panic
+                //         let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(hour, display_minute, viewed_date.second()).unwrap());
+                //         if picker.with_date {
+                //             // datetime mode, date not selected, hour selected
+                //             picker.selected_minute.set(Some(display_minute));
+                //             picker.viewed_date.set(new_date);
+                //         } else {
+                //             // time mode, hour selected
+                //             picker.apply_update_fn_and_set_mutable(new_date.time().js_string());
+                //             picker.container.set(None);
+                //         }
+                //     }
+                // } else {
+                //    // any mode, hour not selected
                     picker.selected_minute.set(Some(display_minute));
                     // display_hour was pre-defined, cannot panic
                     let new_date = PrimitiveDateTime::new(viewed_date.date(), Time::from_hms(viewed_date.hour(), display_minute, viewed_date.second()).unwrap());
                     picker.viewed_date.set(new_date);
                     picker.selected_date.set(Some(new_date));
-                }
+                // }
             }))
         })
     }
