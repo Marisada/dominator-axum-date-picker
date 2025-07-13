@@ -1,5 +1,7 @@
 html, body {
     margin: 0;
+    padding: 0;
+    height: 100vh;
 }
   
 #checkUpdate {
@@ -37,11 +39,11 @@ html, body {
 
 .banner-headline {
     font-weight: 800;
-    font-size: 18px;
+    font-size: 24px;
 }
 
 .banner-subhead {
-    font-size: 16px;
+    font-size: 22px;
     padding-top: 10px;
     overflow-wrap: break-word;
 }

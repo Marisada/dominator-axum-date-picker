@@ -1,5 +1,4 @@
 const CACHE_NAME = `DOM-AXUM-${VERSION}`
-let browser
 
 const start = [
   'manifest.webmanifest',
@@ -12,7 +11,7 @@ const start = [
 
 self.addEventListener('install', event => {
   console.info(`installing service worker "${CACHE_NAME}"`)
-
+  self.skipWaiting()
   const requests = start.map(url => new Request(url, {cache: 'reload'}))
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
@@ -49,11 +48,7 @@ self.addEventListener('fetch', event => {
 })
 
 self.addEventListener('message', event => {
-  browser = event.source
-  if (event.data.id === 'skipWaiting') {
-    skipWaiting()
-    browser.postMessage("reload")
-  } else if (event.data.id === 'version') {
+  if (event.data && event.data.type === 'version') {
     console.info(`Service worker "${CACHE_NAME}" registered`)
     console.info(`App version "${event.data.value}" activated`)
   }
@@ -64,9 +59,9 @@ async function lazyCache(request) {
   const response = await fetch(request)
   const clone = response.clone()
   if (isLazy && response.ok) {
-      caches.open(CACHE_NAME).then(cache => {
-        cache.put(request, clone)
-      })
+    caches.open(CACHE_NAME).then(cache => {
+      cache.put(request, clone)
+    })
   }
   return response
 }

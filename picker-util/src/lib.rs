@@ -1,4 +1,6 @@
-use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, Weekday, format_description::well_known::Iso8601, macros::offset};
+pub mod class;
+
+use time::{Date, Month, OffsetDateTime, PrimitiveDateTime, Time, Duration, Weekday, format_description::well_known::Iso8601, macros::offset};
 
 pub trait JsTime {
     fn js_string(&self) -> String;
@@ -181,7 +183,7 @@ pub fn time_str_hm(text: &str) -> String {
 }
 
 /// floor value to `xx ชั่วโมง yy นาที`
-pub fn duration_hm(duration: time::Duration) -> String {
+pub fn duration_hm(duration: Duration) -> String {
     let secs = duration.whole_seconds();
     let hours = secs / 3600;
     let minutes = (secs % 3600) / 60;
@@ -417,10 +419,7 @@ pub fn weekday_thai(ww: &Weekday) -> &'static str {
 pub mod tests {
 
     use super::*;
-    use time::{
-        macros::{date, datetime, time},
-        Date, Duration, Month, Time,
-    };
+    use time::macros::{date, datetime, time};
 
     #[test]
     fn test_datetime_8601() {
@@ -521,8 +520,8 @@ pub mod tests {
     #[test]
     fn test_duration_hm() {
         assert_eq!(duration_hm(Duration::new(119, 0)), String::from("1 นาที"));
-        assert_eq!(duration_hm(Duration::new(32400, 0)), String::from("9 ชั่วโมง"));
-        assert_eq!(duration_hm(Duration::new(32460, 0)), String::from("9 ชั่วโมง 1 นาที"));
+        assert_eq!(duration_hm(Duration::new(9 * 60 * 60, 0)), String::from("9 ชั่วโมง"));
+        assert_eq!(duration_hm(Duration::new((9 * 60 * 60) + 60, 0)), String::from("9 ชั่วโมง 1 นาที"));
     }
 
     #[test]

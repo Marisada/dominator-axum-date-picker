@@ -1,6 +1,6 @@
 # Date Picker Demo
 
-Thai date picker demo in [Rust](https://www.rust-lang.org/) using [dominator](https://github.com/Pauan/rust-dominator) and [axum](https://github.com/tokio-rs/axum)
+Demo of Thai date picker in [Rust](https://www.rust-lang.org/) using [dominator](https://github.com/Pauan/rust-dominator) and [axum](https://github.com/tokio-rs/axum)
 
 ## Requirements
 - Install Rust from [www.rust-lang.org](https://www.rust-lang.org/tools/install) or
