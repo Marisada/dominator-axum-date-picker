@@ -95,15 +95,16 @@ where
                         Picker::Time => time_8601(&s).map(|t| time_pat(&t)).unwrap_or_default(),
                     }
                 })))
-                // set overlay label's z-index to -1 when input is focus
-                .event(clone!(date_active => move |_:events::Focus| {
-                    date_active.set(true)
-                }))
                 // set overlay label's z-index to 1 when input is blur
                 .event(clone!(date_active => move |_:events::Blur| {
-                    date_active.set(false)
+                    date_active.set(false);
                 }))
                 .with_node!(element => {
+                    // set overlay label's z-index to -1 when input is focus
+                    .event(clone!(element, date_active => move |_:events::Focus| {
+                        date_active.set(true);
+                        element.select();
+                    }))
                     // set disabled
                     .future(disable_broadcast.signal().for_each(clone!(element => move |v| {
                         element.set_disabled(v);
