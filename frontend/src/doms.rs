@@ -15,7 +15,7 @@ use super::datetime_pickers;
 
 /// `DateTime` input with picker from `Mutable<String>`, update `Mutable<bool>` at the end of input/exit<br>
 /// - `disable_signal`: ex. `futures_signal::signal::always(false)`
-/// - `container_mixin`: ex. `|dom| {dom}`
+/// - `container_mixin`: ex. `|dom| dom.style("min-width","190px")`, `NOTE`: sm is `175px`)
 /// - `label_mixin`: apply to label element, ex. `|dom| dom.class("form-control-sm")`
 /// - `input_mixin`: apply to input element, ex. `|dom| dom.class("form-control-sm")`
 ///
@@ -57,7 +57,7 @@ where
 /// `Date` input with picker from `Mutable<String>`, update `Mutable<bool>` at the end of input/exit<br>
 /// - `disable_signal`: ex. `futures_signal::signal::always(false)`
 /// - `paired_mutable`: mutable of paired `Time` for calculate the same constrain
-/// - `container_mixin`: ex. `|dom| {dom}`
+/// - `container_mixin`: ex. `|dom| dom.style("min-width","135px")`, `NOTE`: sm is `120px`)
 /// - `label_mixin`: apply to label element, ex. `|dom| dom.class("form-control-sm")`
 /// - `input_mixin`: apply to input element, ex. `|dom| dom.class("form-control-sm")`
 ///
@@ -100,7 +100,7 @@ where
 /// `Time` input with picker from `Mutable<String>`, update `Mutable<bool>` at the end of input/exit<br>
 /// - `disable_signal`: ex. `futures_signal::signal::always(false)`
 /// - `paired_mutable`: mutable of paired `Date` for calculate the same constrain
-/// - `container_mixin`: ex. `|dom| {dom}`
+/// - `container_mixin`: ex. `|dom| dom.style("min-width","110px")`, `NOTE`: sm is `95px`)
 /// - `label_mixin`: apply to label element, ex. `|dom| dom.class("form-control-sm")`
 /// - `input_mixin`: apply to input element, ex. `|dom| dom.class("form-control-sm")`
 ///

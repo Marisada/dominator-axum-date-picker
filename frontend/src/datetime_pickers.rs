@@ -53,6 +53,7 @@ where
 
     html!("div", {
         .class("position-relative")
+        .style("text-align", "left")
         .apply(container_mixin)
         // overlay label element
         .child(html!("div", {
